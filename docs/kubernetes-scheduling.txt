@@ -1,0 +1,3 @@
+Kubernetes scheduling
+
+The scheduler filters infeasible nodes, then scores feasible nodes using resource fit, affinity rules, taints/tolerations, topology spread, and priority. It may preempt lower-priority pods under resource pressure.

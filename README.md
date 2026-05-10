@@ -7,7 +7,7 @@
 4. Submit query (SSE): `curl -N -X POST http://localhost:8000/query -H "Content-Type: application/json" -d '{"query":"Explain Kubernetes scheduling"}'`
 
 ## Architecture
-See [ARCHITECTURE.md](/C:/Users/LENOVO/Documents/New project 3/ARCHITECTURE.md)
+See [ARCHITECTURE.md](ARCHITECTURE.md)
 
 ## Services
 - `api`: FastAPI (5 required endpoints)

@@ -1,0 +1,3 @@
+PostgreSQL MVCC and transactions
+
+PostgreSQL uses multi-version concurrency control. Readers generally do not block writers. Isolation levels balance anomalies vs performance; EXPLAIN ANALYZE helps diagnose slow plans and index effectiveness.

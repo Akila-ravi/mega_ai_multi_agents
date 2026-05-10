@@ -5,3 +5,4 @@ __pycache__/
 .local
 local.db
 .pytest_cache/
+vectorstore/

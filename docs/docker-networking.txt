@@ -1,0 +1,3 @@
+Docker networking basics
+
+Common drivers include bridge networks for local development, overlay networks for multi-host clusters, and host networking for performance-sensitive workloads. Service discovery often uses embedded DNS for service names.

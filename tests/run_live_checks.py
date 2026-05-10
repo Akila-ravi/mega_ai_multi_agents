@@ -2,7 +2,7 @@ import asyncio, json, os
 import httpx
 
 async def run_checks():
-    base = os.getenv("BASE_URL", "http://127.0.0.1:8001")
+    base = os.getenv("BASE_URL", "http://127.0.0.1:8000")
     async with httpx.AsyncClient(timeout=40) as c:
         er = (await c.post(f'{base}/eval/retry', json={'run_type':'failed_only'})).json()
         assert 'summary' in er and 'prompt_proposal' in er

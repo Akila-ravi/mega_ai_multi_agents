@@ -30,7 +30,7 @@ class PromptApprovalRequest(BaseModel):
 
 
 class EvalRetryRequest(BaseModel):
-    run_type: Literal["failed_only"] = "failed_only"
+    run_type: Literal["failed_only", "full"] = "failed_only"
 
 
 class ToolFailure(BaseModel):
@@ -94,6 +94,7 @@ class SharedContext(BaseModel):
     agent_outputs: dict[str, AgentOutput] = Field(default_factory=dict)
     events: list[ContextEvent] = Field(default_factory=list)
     tool_results: list[dict[str, Any]] = Field(default_factory=list)
+    rag_hits: list[dict[str, Any]] = Field(default_factory=list)
     context_budget: dict[str, int] = Field(default_factory=dict)
     token_usage: dict[str, int] = Field(default_factory=dict)
     policy_violations: list[str] = Field(default_factory=list)

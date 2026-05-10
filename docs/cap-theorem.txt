@@ -1,0 +1,3 @@
+CAP Theorem (practice note)
+
+The CAP theorem is a useful mental model: during a network partition, designers often must trade off strong consistency versus availability. Many large-scale systems prioritize availability and rely on eventual consistency with application-level conflict handling.

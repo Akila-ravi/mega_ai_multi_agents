@@ -6,13 +6,13 @@ import uuid
 
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
-from sqlalchemy import desc, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.init_db import init_db
-from app.db.models import AgentLog, EvalRun, Job, JobStatus, PromptDecision, PromptVersion, ToolCall
+from app.db.models import AgentLog, Job, JobStatus, PromptDecision, PromptVersion, ToolCall
 from app.db.session import AsyncSessionLocal, get_db_session
-from app.evaluation.engine import build_eval_cases, latest_eval_summary, propose_prompt_diff, score_case
+from app.evaluation.engine import latest_eval_summary, run_eval_suite
 from app.schemas import ErrorResponse, EvalRetryRequest, PromptApprovalRequest, QueryRequest, TraceResponse
 from app.worker.queue import enqueue_job
 
@@ -45,6 +45,9 @@ async def query_endpoint(req: QueryRequest, db: AsyncSession = Depends(get_db_se
                 rows = logs.scalars().all()
                 for row in rows:
                     last_log_id = row.id
+                    if row.event_type == "budget_update":
+                        yield f"data: {json.dumps({'budget_update': row.payload})}\n\n"
+                        continue
                     payload = {"agent": row.agent_id, "event": row.event_type, "token_count": row.token_count, "latency_ms": row.latency_ms}
                     yield f"data: {json.dumps(payload)}\n\n"
 
@@ -121,32 +124,5 @@ async def prompt_approve_endpoint(req: PromptApprovalRequest, db: AsyncSession =
 
 @app.post("/eval/retry")
 async def eval_retry_endpoint(req: EvalRetryRequest, db: AsyncSession = Depends(get_db_session)):
-    cases = build_eval_cases()
-    results = []
-    failures = []
-    for c in cases:
-        if req.run_type == "failed_only" and c.category == "normal":
-            continue
-        ans = "Fact 1 and Fact 2. Contradictions were resolved."
-        sc = score_case(ans, c.expected_keywords, tool_calls=3, violations=0)
-        item = {"case_id": c.case_id, "category": c.category, "scores": sc, "answer": ans, "input": c.query}
-        if sc["overall"]["score"] < 0.75:
-            failures.append(item)
-        results.append(item)
-
-    by_cat = {}
-    for cat in ["normal", "ambiguous", "adversarial"]:
-        bucket = [r for r in results if r["category"] == cat]
-        if bucket:
-            by_cat[cat] = {
-                "count": len(bucket),
-                "avg_overall": sum(x["scores"]["overall"]["score"] for x in bucket) / len(bucket),
-            }
-
-    summary = {"run_type": req.run_type, "total": len(results), "failed": len(failures), "categories": by_cat}
-    run = EvalRun(run_type=req.run_type, summary=summary, details={"results": results, "failures": failures})
-    db.add(run)
-    await db.commit()
-
-    proposal = await propose_prompt_diff(db, failures)
-    return {"summary": summary, "prompt_proposal": {"id": proposal.id, "diff": proposal.diff, "justification": proposal.justification}}
+    summary, proposal = await run_eval_suite(db, req.run_type)
+    return {"summary": summary, "prompt_proposal": proposal}

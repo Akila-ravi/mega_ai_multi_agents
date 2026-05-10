@@ -1,0 +1,3 @@
+Eventual consistency in distributed systems
+
+Replicas may temporarily disagree. When writes quiesce, well-designed systems converge. Conflict resolution strategies include last-write-wins, version vectors, CRDTs, and explicit user merges.

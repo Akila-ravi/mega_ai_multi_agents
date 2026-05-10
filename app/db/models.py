@@ -69,6 +69,30 @@ class EvalRun(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
 
+class EvalCaseResult(Base):
+    __tablename__ = "eval_case_results"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    eval_run_id: Mapped[int] = mapped_column(Integer, ForeignKey("eval_runs.id"), index=True)
+    case_id: Mapped[str] = mapped_column(String(64), index=True)
+    category: Mapped[str] = mapped_column(String(32), index=True)
+    query: Mapped[str] = mapped_column(Text)
+    answer: Mapped[str] = mapped_column(Text)
+    scores: Mapped[dict] = mapped_column(JSON)
+    tool_calls_count: Mapped[int] = mapped_column(Integer, default=0)
+    violations_count: Mapped[int] = mapped_column(Integer, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class CorpusChunk(Base):
+    __tablename__ = "corpus_chunks"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    external_id: Mapped[str] = mapped_column(String(128), unique=True, index=True)
+    title: Mapped[str] = mapped_column(String(512), default="")
+    url: Mapped[str] = mapped_column(String(1024), default="")
+    body: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
 class PromptVersion(Base):
     __tablename__ = "prompt_versions"
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
